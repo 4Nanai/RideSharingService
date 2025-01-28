@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, reverse
 from .forms import NewRideForm
 from django.views.decorators.http import require_http_methods
 from .models import RideModel
+from user.models import CarModel
 # Create your views here.
 
 @require_http_methods(['GET', 'POST'])
@@ -173,18 +174,24 @@ def search_ride_request(request):
     startTime = request.GET.get('startTime')
     endTime = request.GET.get('endTime')
     user = request.user
-    query = (Q(is_confirmed=False)&
+    vehicle_type_filtered = request.GET.get('vehicle_type')
+    cars = CarModel.objects.filter(Q(user__exact=user))
+    cars_values = cars.values_list('vehicle_type',flat=True) 
+    query = (~Q(owner__exact=user)&Q(is_confirmed=False)&
              (Q(destination__icontains=q)|
               Q(total_passenger__contains=q)|
               Q(departure__icontains=q)))
+    
     if not user.is_driver:
         return redirect(reverse('index'))
+    elif vehicle_type_filtered:
+        query &= Q(vehicle_type__exact='any')|Q(vehicle_type__in=cars_values)
     if startTime:
         query &= Q(arrival_time__date__gte=startTime)
     if endTime:
         query &= Q(arrival_time__date__lte=endTime)
     rides = RideModel.objects.filter(query)
-    return render(request, 'ride/ride_request.html', context={'rides': rides, 'keyword_request': q, 'startTime_request': startTime, 'endTime_request': endTime})
+    return render(request, 'ride/ride_request.html', context={'rides': rides, 'keyword_request': q, 'startTime_request': startTime, 'endTime_request': endTime, 'vehicle_type_filtered':vehicle_type_filtered})
 
 # join ride
 @login_required(login_url='/user/login/')

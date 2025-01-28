@@ -9,15 +9,24 @@ class NewRideForm(forms.ModelForm):
     class Meta:
         model = RideModel
         exclude = ['is_confirmed', 'owner', 'driver', 'share_user']
+        VEHICLE_CHOICES = [('any','Any'),
+                           ('suv','SUV'), 
+                           ('pika','Pika'), 
+                           ('van','Van'), 
+                           ('sedan','Sedan'), 
+                           ('sports_car','Sports car'), 
+                           ('tank','Tank'), 
+                           ('motorcycle','Motorcycle')]
         widgets = {
             'departure': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter departure position'}),
             'destination': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter destination'}),
             'arrival_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local', 'placeholder': 'Enter expected arrival time'},),
             'total_passenger': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter total number of passengers'}),
             'can_share': forms.CheckboxInput(attrs={'class': 'form-check-input', 'style': 'margin-left:2px; margin-top:6px;'}),
-            'vehicle_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter expected vehicle type (Optional)'}),
+            'vehicle_type': forms.Select(attrs={'class': 'form-control'},choices=VEHICLE_CHOICES),
             'sp_info': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter special requirements (Optional)', 'style':'height:38px'}),
         }
+        
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

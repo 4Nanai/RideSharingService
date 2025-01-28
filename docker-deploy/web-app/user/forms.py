@@ -97,12 +97,18 @@ class LoginForm(forms.Form):
 
 
 class DriverRegisterForm(forms.Form):
+    VEHICLE_CHOICES = [ ('suv','SUV'), 
+                        ('pika','Pika'), 
+                        ('van','Van'), 
+                        ('sedan','Sedan'), 
+                        ('sports_car','Sports car'), 
+                        ('tank','Tank'), 
+                        ('motorcycle','Motorcycle')
+                        ]
+    
     vehicle_type = forms.CharField(max_length=100,
                                    label='Vehicle Type',
-                                   widget=forms.TextInput(attrs={
-                                       'class': 'form-control',
-                                       'placeholder': 'Enter type of vehicle'
-                                   }))
+                                   widget=forms.Select(attrs={'class': 'form-control'},choices=VEHICLE_CHOICES))
     vehicle_number = forms.CharField(max_length=100,
                                      label='License Plate Number',
                                      widget=forms.TextInput(attrs={
@@ -135,8 +141,15 @@ class CarForm(forms.ModelForm):
     class Meta:
         model = CarModel
         exclude = ['user',]
+        VEHICLE_CHOICES = [('suv','SUV'), 
+                           ('pika','Pika'), 
+                           ('van','Van'), 
+                           ('sedan','Sedan'), 
+                           ('sports_car','Sports car'), 
+                           ('tank','Tank'), 
+                           ('motorcycle','Motorcycle')]
         widgets = {
-            'vehicle_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter vehicle type'}),
+            'vehicle_type': forms.Select(attrs={'class': 'form-control'},choices=VEHICLE_CHOICES),
             'vehicle_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter vehicle number'}),
             'max_passenger': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter maximum passengers'}),
             'sp_info': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter special information (Optional)', 'style': 'height:150px;'}),

@@ -25,11 +25,9 @@
           Ride
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-          <a class="dropdown-item" href="{% url 'ride:view_my_ride' %}">My Rides</a>
-          <a class="dropdown-item" href="{% url 'ride:new_ride' %}">New Rides</a>
-{#            TODO: ride request url#}
-          <a class="dropdown-item" href="{% url 'ride:ride_requests' %}">Ride Requests</a>
-          <a class="dropdown-item" href="{% url 'ride:view_share_ride' %}">Shared Rides</a>
+            <a class="dropdown-item" href="{% url 'ride:new_ride' %}">New Rides</a>
+            <a class="dropdown-item" href="{% url 'ride:view_my_ride' %}">My Rides</a>
+            <a class="dropdown-item" href="{% url 'ride:view_share_ride' %}">All Shared Rides</a>
         </div>
       </li>
       <li class="nav-item dropdown">
@@ -37,8 +35,9 @@
           Driver
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-            <a class="dropdown-item" href="{% url 'user:display_car' %}">My Cars</a>
             <a class="dropdown-item" href="{% url 'user:register_driver' %}">Register</a>
+            <a class="dropdown-item" href="{% url 'user:display_car' %}">My Car Info</a>
+            <a class="dropdown-item" href="{% url 'ride:ride_requests' %}">All Ride Requests</a>
         </div>
       </li>
       <li class="nav-item">
@@ -68,11 +67,6 @@
         <div class="text-center">
             My cars
             <button class="btn btn-warning btn-sm" onclick="window.location.href='{% url 'user:display_car' %}'" style="margin-right: 20px;">Click here</button>
-        </div>
-        <!-- register car -->
-        <div class="text-center mt-3">
-            Has another car to register?
-            <button class="btn btn-warning btn-sm" onclick="window.location.href='{% url 'user:register_driver' %}'" style="margin-right: 20px;">Click here</button>
         </div>
         {% endif %}
 

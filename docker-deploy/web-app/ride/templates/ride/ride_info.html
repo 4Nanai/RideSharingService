@@ -27,6 +27,10 @@
                             </thead>
                             <tbody>
                                 <tr>
+                                    <td>Ride Owner</td>
+                                    <td>{{ ride.owner }}</td>
+                                </tr>
+                                <tr>
                                     <td>Departure</td>
                                     <td>{{ ride.departure }}</td>
                                 </tr>
@@ -54,13 +58,19 @@
                         </table>
                         </div>
                         <!-- Submit Button -->
-                        <div class="text-center">
-                            <form action="" method="post" class="d-flex justify-content-around align-items-center">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary" style="margin-right: 16px; width: 100px">Confirm</button>
-                                <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'ride:ride_requests' %}'">Cancel</button>
-                            </form>
-                        </div>
+                        {% if show_info_only %}
+                            <div class="text-right">
+                                <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'ride:view_my_ride' %}'">戻る</button>
+                            </div>
+                        {% else %}
+                            <div class="text-center">
+                                <form action="" method="post" class="d-flex justify-content-around align-items-center">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary" style="margin-right: 16px; width: 100px">Confirm</button>
+                                    <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'ride:ride_requests' %}'">Cancel</button>
+                                </form>
+                            </div>
+                        {% endif %}
                         <script>
                             // if POST check SUCCESS
                             {% if success %}

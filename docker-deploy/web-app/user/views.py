@@ -92,8 +92,7 @@ def register_driver_view(request):
             user.save()
             return render(request, 'user/driver_register.html', context={'form': form, 'success': True})
         else:
-            form_error = form.errors.get_json_data()
-            return render(request, 'user/driver_register.html', context={'form': form, 'form_error': form_error})
+            return render(request, 'user/driver_register.html', context={'form': form})
 
 @require_http_methods(['GET', 'POST'])
 @login_required(login_url='/user/login/')

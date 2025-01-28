@@ -3,5 +3,5 @@
 .idea/
 *.pyc
 **/__pycache__/
-# docker-deploy/web-app/**/migrations/*.py
+
 

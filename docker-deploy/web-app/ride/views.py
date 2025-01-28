@@ -71,15 +71,19 @@ def revise_ride_info(request, ride_id):
 def search_my_ride(request):
     q = request.GET.get('q')
     date = request.GET.get('date')
+    vehicle = request.GET.get('vehicle')
     ride_query = Q(owner=request.user) & (Q(destination__icontains=q) | Q(departure__icontains=q))
     share_query = Q(share_user=request.user) & (Q(destination__icontains=q) | Q(departure__icontains=q))
     if date:
         ride_query &= Q(arrival_time__date=date)
         share_query &= Q(arrival_time__date=date)
+    if vehicle and vehicle != 'any':
+        ride_query &= Q(vehicle_type__exact=vehicle)
+        share_query &= Q(vehicle_type__exact=vehicle)
 
     rides = RideModel.objects.filter(ride_query)
     share_rides = RideModel.objects.filter(share_query)
-    return render(request, 'ride/ride.html', context={'rides': rides, 'is_search': True, 'share_rides': share_rides, 'view_my_ride': True, 'keyword_request': q, 'date_request': date})
+    return render(request, 'ride/ride.html', context={'rides': rides, 'is_search': True, 'share_rides': share_rides, 'view_my_ride': True, 'keyword_request': q, 'date_request': date, 'vehicle_request': vehicle})
 
 @login_required(login_url='/user/login')
 def ride_detail_view(request, ride_id):
@@ -126,6 +130,7 @@ def search_share_ride(request):
     startTime = request.GET.get('startTime')
     endTime = request.GET.get('endTime')
     user = request.user
+    vehicle = request.GET.get('vehicle')
     query = Q(can_share=True)&Q(is_confirmed=False)&(Q(destination__icontains=q)|Q(departure__icontains=q)|Q(total_passenger__contains=q))
     if user.is_authenticated:
         query &= ~Q(owner__exact=user)
@@ -133,8 +138,10 @@ def search_share_ride(request):
         query &= Q(arrival_time__date__gte=startTime)
     if endTime:
         query &= Q(arrival_time__date__lte=endTime)
+    if vehicle and vehicle != 'any':
+        query &= Q(vehicle_type__exact=vehicle)
     rides = RideModel.objects.filter(query)
-    return render(request, 'ride/share_ride.html', context={'rides': rides, 'view_share_ride': True, 'keyword_request': q, 'startTime_request': startTime, 'endTime_request': endTime})
+    return render(request, 'ride/share_ride.html', context={'rides': rides, 'view_share_ride': True, 'keyword_request': q, 'startTime_request': startTime, 'endTime_request': endTime, 'vehicle_request': vehicle})
 
 # help function to get valid ride request query
 def get_ride_request_query(request):

@@ -53,20 +53,33 @@
                 <input name="startTime" id="start-date" class="form-control mr-sm-2 placeholder-text"
                        type="text" placeholder="Select Start Time"
                        onfocus="(this.type='date')" onblur="(this.type='text')"
-                       style="margin-bottom: 20px;" value="{{startTime_request}}">
+                       style="margin-bottom: 20px; width: 150px" value="{{startTime_request}}">
 
 {#                End time search block#}
                 <label for="end-date" class="sr-only">endTime</label>
                 <input name="endTime" id="end-date" class="form-control mr-sm-2 placeholder-text"
                        type="text" placeholder="Select End Time"
                        onfocus="(this.type='date')" onblur="(this.type='text')"
-                       style="margin-bottom: 20px;" value="{{endTime_request}}">
+                       style="margin-bottom: 20px; width: 150px" value="{{endTime_request}}">
 
 {#                text search#}
                 <input name="q" class="form-control mr-sm-2" type="search"
                        placeholder="Search" aria-label="Search"
-                       style="margin-bottom: 20px;" value="{{keyword_request}}">
+                       style="margin-bottom: 20px; width: 150px" value="{{keyword_request}}">
 
+{#                Car type search added#}
+                <select id="vehicle-select" name="vehicle" class="btn btn-outline-primary mr-sm-2" style="margin-bottom: 20px; width: auto">
+                    <option value="any" {% if vehicle_request == "any" or not vehicle_request %}selected{% endif %}>Any</option>
+                    <option value="suv" {% if vehicle_request == "suv" %}selected{% endif %}>SUV</option>
+                    <option value="pika" {% if vehicle_request == "pika" %}selected{% endif %}>Pika</option>
+                    <option value="van" {% if vehicle_request == "van" %}selected{% endif %}>Van</option>
+                    <option value="sedan" {% if vehicle_request == "sedan" %}selected{% endif %}>Sedan</option>
+                    <option value="sports_car" {% if vehicle_request == "sports_car" %}selected{% endif %}>Sports Car</option>
+                    <option value="tank" {% if vehicle_request == "tank" %}selected{% endif %}>Tank</option>
+                    <option value="motorcycle" {% if vehicle_request == "motorcycle" %}selected{% endif %}>Motorcycle</option>
+                </select>
+
+{#                clean search button#}
                 <a href="{% url 'ride:view_share_ride' %}" class="btn btn-outline-danger btn-sm mr-sm-2" style="margin-bottom: 20px;">Clean</a>
 {#                Submit button#}
                 <button class="btn btn-outline-success btn-sm" type="submit" style="margin-bottom: 20px;">Search</button>

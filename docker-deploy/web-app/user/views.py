@@ -97,10 +97,17 @@ def register_driver_view(request):
 @require_http_methods(['GET', 'POST'])
 @login_required(login_url='/user/login/')
 def revise_car_view(request, pk):
+    car = request.user.cars.get(pk=pk)
     if request.method == 'GET':
-        car = request.user.cars.get(pk=pk)
         form = CarForm(instance=car)
         return render(request, 'user/revise_car_info.html', context={'car': car, 'form':form})
+    else:
+        form = CarForm(request.POST, instance=car)
+        if form.is_valid():
+            form.save()
+            return render(request, 'user/revise_car_info.html', context={'form': form, 'is_success': True})
+        else:
+            return render(request, 'user/revise_car_info.html', context={'form': form, 'is_success': False})
 
 class delete_car_view(DeleteView):
     model = CarModel

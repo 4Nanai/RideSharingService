@@ -22,14 +22,14 @@
                             {{ form.as_p }}
                             <!-- Submit Button -->
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary" style="margin-right: 16px; width: 100px">Request</button>
+                                <button type="submit" class="btn btn-primary" style="margin-right: 16px; width: 100px">Revise</button>
                                 <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'ride:view_my_ride' %}'">戻る</button>
                             </div>
                         </form>
                         <script>
                             // if POST check SUCCESS
                             {% if success %}
-                            alert("Submit success!");
+                            alert("Revise success!");
                             // redirect url
                             window.location.href = "{% url 'ride:view_my_ride' %}";
                             {% endif %}

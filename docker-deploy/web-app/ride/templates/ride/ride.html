@@ -51,10 +51,22 @@
 <!--                date search added-->
                 <label for="date" class="sr-only">Date</label>
                 <input name="date" id="date" class="form-control mr-sm-2" type="date" placeholder="Select Date" style="margin-bottom: 20px;" value="{{date_request}}">
-<!--                <label for="time" class="sr-only">Time</label>-->
-<!--                <input name="time" id="time" class="form-control mr-sm-2" type="time" placeholder="Select Time" style="margin-bottom: 20px;">-->
+
 <!--                ride departure and destination search-->
-                <input name="q" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" style="margin-bottom: 20px;" value="{{keyword_request}}">
+                <input name="q" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" style="margin-bottom: 20px; width: 150px" value="{{keyword_request}}">
+
+{#                Car type search added#}
+                <select id="vehicle-select" name="vehicle" class="btn btn-outline-primary mr-sm-2" style="margin-bottom: 20px; width: auto">
+                    <option value="any" {% if vehicle_request == "any" or not vehicle_request %}selected{% endif %}>Any</option>
+                    <option value="suv" {% if vehicle_request == "suv" %}selected{% endif %}>SUV</option>
+                    <option value="pika" {% if vehicle_request == "pika" %}selected{% endif %}>Pika</option>
+                    <option value="van" {% if vehicle_request == "van" %}selected{% endif %}>Van</option>
+                    <option value="sedan" {% if vehicle_request == "sedan" %}selected{% endif %}>Sedan</option>
+                    <option value="sports_car" {% if vehicle_request == "sports_car" %}selected{% endif %}>Sports Car</option>
+                    <option value="tank" {% if vehicle_request == "tank" %}selected{% endif %}>Tank</option>
+                    <option value="motorcycle" {% if vehicle_request == "motorcycle" %}selected{% endif %}>Motorcycle</option>
+                </select>
+
                 <button class="btn btn-outline-success" type="submit" style="margin-bottom: 20px;">Search</button>
             </form>
         </div>
@@ -131,7 +143,7 @@
                 {% empty %}
                 <!-- Display message if no rides are found -->
                 <tr>
-                    <td colspan="10" class="text-center">
+                    <td colspan="11" class="text-center">
                         No rides found.
                         {% if not is_search %}
                         <a href="{% url 'ride:new_ride' %}" class="badge alert-primary">Click here</a> to register a <strong>new Ride</strong>.
@@ -216,7 +228,7 @@
                 {% empty %}
                 <!-- Display message if no rides are found -->
                 <tr>
-                    <td colspan="10" class="text-center">
+                    <td colspan="11" class="text-center">
                         No share rides found.
                         {% if rides is empty %}
                         <a href="{% url 'ride:new_ride' %}" class="badge alert-primary">Click here</a> to register a <strong>new Ride</strong>.
@@ -282,11 +294,8 @@
                 {% empty %}
                 <!-- Display message if no rides are found -->
                 <tr>
-                    <td colspan="10" class="text-center">
-                        No share rides found.
-                        {% if rides is empty %}
-                        <a href="{% url 'ride:new_ride' %}" class="badge alert-primary">Click here</a> to register a <strong>new Ride</strong>.
-                        {% endif %}
+                    <td colspan="11" class="text-center">
+                        No driver rides found.
                     </td>
                 </tr>
                 {% endfor %}

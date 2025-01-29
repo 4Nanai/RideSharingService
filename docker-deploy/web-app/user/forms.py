@@ -5,7 +5,7 @@ from .models import CarModel
 User = get_user_model()
 
 from django import forms
-from .models import RSSUser
+from .models import RSSUser, CaptchaModel
 
 class RegisterForm(forms.Form):
     username = forms.CharField(
@@ -20,6 +20,26 @@ class RegisterForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter your username'
+        })
+    )
+    email = forms.EmailField(
+        label='Email',
+        error_messages={
+            'required': 'Please enter your email address.',
+            'invalid': 'Enter a valid email address.',
+        },
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email'
+        })
+    )
+    captcha = forms.CharField(
+        min_length=6,
+        max_length=6,
+        label='Captcha',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter the captcha'
         })
     )
     pwd1 = forms.CharField(
@@ -57,6 +77,21 @@ class RegisterForm(forms.Form):
         if exist:
             raise forms.ValidationError('Account has already been registered.')
         return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        exist = RSSUser.objects.filter(email=email).exists()
+        if exist:
+            raise forms.ValidationError('Email has already been registered.')
+        return email
+
+    def clean_captcha(self):
+        captcha = self.cleaned_data.get('captcha')
+        email = self.cleaned_data.get('email')
+        captcha_obj = CaptchaModel.objects.filter(email=email, captcha=captcha).first()
+        if not captcha_obj:
+            raise forms.ValidationError('Invalid captcha.')
+        return captcha
 
     def clean_pwd2(self):
         pwd1 = self.cleaned_data.get('pwd1')

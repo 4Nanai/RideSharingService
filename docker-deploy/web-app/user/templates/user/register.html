@@ -6,6 +6,31 @@
     <title>Register Page</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+<style>
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 9999;  /* 確保在最上層 */
+        max-width: 350px;
+        min-width: 300px;
+        line-height: 1.5;  /* 防止文字截斷 */
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        overflow: visible;  /* 允許內容溢出 */
+    }
+
+    .toast-body {
+        padding: 1rem;
+        word-break: break-word;  /* 長文本自動換行 */
+    }
+
+    /* 修正關閉按鈕位置 */
+    .btn-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+</style>
 <body class="bg-light">
     <div class="container mt-5">
         <div class="row justify-content-center">
@@ -28,6 +53,166 @@
                                 </div>
                                 {% endif %}
                             </div>
+                            <!-- Email Field -->
+                            <div class="form-group">
+                                <label for="id_email" class="form-label">{{ form.email.label }}</label>
+                                <div class="input-group">
+                                    {{ form.email }}
+                                </div>
+                                {% if form.email.errors %}
+                                <div class="text-danger">
+                                    {{ form.email.errors|striptags }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Captcha Field -->
+                            <div class="form-group">
+                                <label for="captcha-input">Captcha</label>
+                                <div class="input-group">
+                                    {{ form.captcha }}
+                                    <button
+                                        type="button"
+                                        id="send-captcha-btn"
+                                        class="btn btn-primary"
+                                        style="min-width: 120px;"
+                                    >
+                                        Send Captcha
+                                    </button>
+                                </div>
+                                {% if form.captcha.errors %}
+                                    <div class="text-danger">
+                                        {{ form.captcha.errors|striptags }}
+                                    </div>
+                                {% endif %}
+                                <div class="invalid-feedback captcha-error"></div>
+                            </div>
+
+                            <style>
+                            /* Setting style */
+                            #send-captcha-btn:disabled {
+                                opacity: 0.65;
+                                cursor: not-allowed;
+                            }
+
+                            .input-group {
+                                gap: 8px;
+                            }
+
+                            .invalid-feedback {
+                                display: none;
+                                margin-top: 6px;
+                            }
+
+                            .was-validated .invalid-feedback {
+                                display: block;
+                            }
+                            </style>
+
+                            <script>
+                            document.addEventListener('DOMContentLoaded', () => {
+                                const sendBtn = document.getElementById('send-captcha-btn');
+                                const emailInput = document.getElementById('id_email');
+                                const captchaInput = document.getElementById('captcha-input');
+
+                                // sending captcha
+                                sendBtn.addEventListener('click', async () => {
+                                    const email = emailInput.value.trim();
+
+                                    // front-end validation
+                                    if (!validateEmail(email)) {
+                                        showError(emailInput, 'Please enter a valid email address');
+                                        return;
+                                    }
+
+                                    // disabled button and show loading icon
+                                    sendBtn.disabled = true;
+                                    sendBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Sending...`;
+
+                                    try {
+                                        const response = await fetch('captcha/', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': getCookie('csrftoken')
+                                            },
+                                            body: JSON.stringify({ email })
+                                        });
+
+                                        const data = await response.json();
+
+                                        if (data.code === 200) {
+                                            startCountdown(60);
+                                            showSuccess('Captcha send, please check your email');
+                                        } else {
+                                            showError(captchaInput, data.msg || 'Email send failed, please try again later');
+                                        }
+                                    } catch (error) {
+                                        showError(captchaInput, 'Network error, please try again later');
+                                    } finally {
+                                        sendBtn.disabled = false;
+                                        sendBtn.textContent = 'Send Captcha';
+                                    }
+                                });
+
+                                // functions
+                                function validateEmail(email) {
+                                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                                }
+
+                                function startCountdown(seconds) {
+                                    let remaining = seconds;
+                                    sendBtn.disabled = true;
+
+                                    const timer = setInterval(() => {
+                                        sendBtn.textContent = `Resend(${remaining})`;
+                                        if (--remaining < 0) {
+                                            clearInterval(timer);
+                                            sendBtn.disabled = false;
+                                            sendBtn.textContent = 'Send Captcha';
+                                        }
+                                    }, 1000);
+                                }
+
+                                function getCookie(name) {
+                                    const value = `; ${document.cookie}`;
+                                    const parts = value.split(`; ${name}=`);
+                                    if (parts.length === 2) return parts.pop().split(';').shift();
+                                }
+
+                                function showError(inputElement, message) {
+                                    const errorDiv = inputElement.nextElementSibling?.classList.contains('invalid-feedback')
+                                        ? inputElement.nextElementSibling
+                                        : inputElement.parentElement.nextElementSibling;
+
+                                    errorDiv.textContent = message;
+                                    inputElement.classList.add('is-invalid');
+                                    errorDiv.style.display = 'block';
+                                }
+
+                                function showSuccess(message) {
+                                    const toast = document.createElement('div');
+                                    toast.className = 'toast align-items-center text-white bg-success border-0';
+                                    toast.innerHTML = `
+                                        <div class="d-flex position-relative">
+                                            <div class="toast-body">${message}</div>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                                        </div>
+                                    `;
+
+                                    // set position and show toast
+                                    toast.style.position = 'fixed';
+                                    toast.style.bottom = '20px';
+                                    toast.style.left = '20px';
+
+                                    document.body.appendChild(toast);
+                                    new bootstrap.Toast(toast, {
+                                        autohide: true,
+                                        delay: 3000
+                                    }).show();
+                                }
+                            });
+                            </script>
 
                             <!-- Password Field -->
                             <div class="form-group">

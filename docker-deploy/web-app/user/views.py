@@ -1,5 +1,6 @@
+import string
 from http.client import responses
-
+from django.http.response import JsonResponse
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory
@@ -10,8 +11,24 @@ from django.views.generic import DeleteView
 from .forms import RegisterForm, LoginForm, DriverRegisterForm, CarForm
 from django.views.decorators.http import require_http_methods
 from .models import RSSUser, CarModel
-
+from django.core.mail import send_mail
+import _string
+import random
 # Create your views here.
+def send_email(request):
+    email = request.GET.get('email')
+    # if not get valid email
+    if not email:
+        return JsonResponse({'code':400, 'msg': 'email is required',})
+    # get CAPTCHA
+    captcha = "".join(random.sample(string.digits, 6))
+    send_mail('Ride Sharing System Register',
+              f'Your CAPTCHA is {captcha}\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
+              '<EMAIL>',
+              [email],
+              fail_silently=False)
+    return JsonResponse({'code':200, 'msg': 'email sent'})
+
 @require_http_methods(['GET', 'POST'])
 def register_view(request):
     if request.user.is_authenticated:

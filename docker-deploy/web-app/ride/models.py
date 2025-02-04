@@ -11,7 +11,15 @@ class RideModel(models.Model):
     can_share = models.BooleanField(default=False, verbose_name='Shared ride')
     vehicle_type = models.CharField(blank=True, default='', verbose_name='Expected vehicle type*')
     sp_info = models.TextField(blank=True, default='', verbose_name='Special Needs*')
-    is_confirmed = models.BooleanField(default=False)
+    # is_confirmed = models.BooleanField(default=False)
+    # is_complete = models.BooleanField(default=False)
+
+    STATUS_CHOICES = [
+        ('pending', 'pending'),
+        ('comfirmed','comfirmed'),
+        ('complete','complete')
+    ]
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
 
     pub_time = models.DateTimeField(auto_now_add=True)
 
@@ -20,4 +28,4 @@ class RideModel(models.Model):
     share_user = models.ManyToManyField(RSSUser, related_name='share_rides')
 
     class Meta:
-        ordering = ['-pub_time', 'is_confirmed']
+        ordering = ['-pub_time', 'status']

@@ -116,7 +116,7 @@ def share_ride_view(request):
     # 2. ride cannot have been confirmed
     # 3. user cannot be the owner of this ride
     
-    query = Q(can_share=True)&Q(is_confirmed=False)
+    query = Q(can_share=True)&Q(status='pending')
     if user.is_authenticated:
         query &= ~Q(owner__exact=user)
         query &= ~Q(share_user__exact=user)
@@ -132,7 +132,7 @@ def search_share_ride(request):
     endTime = request.GET.get('endTime')
     user = request.user
     vehicle = request.GET.get('vehicle')
-    query = Q(can_share=True)&Q(is_confirmed=False)&(Q(destination__icontains=q)|Q(departure__icontains=q)|Q(total_passenger__contains=q))
+    query = Q(can_share=True)&Q(status='pending')&(Q(destination__icontains=q)|Q(departure__icontains=q)|Q(total_passenger__contains=q))
     if user.is_authenticated:
         query &= ~Q(owner__exact=user)
     if startTime:
@@ -142,12 +142,13 @@ def search_share_ride(request):
     if vehicle and vehicle != 'any':
         query &= Q(vehicle_type__exact=vehicle)
     rides = RideModel.objects.filter(query)
+    
     return render(request, 'ride/share_ride.html', context={'rides': rides, 'view_share_ride': True, 'keyword_request': q, 'startTime_request': startTime, 'endTime_request': endTime, 'vehicle_request': vehicle})
 
 # help function to get valid ride request query
 def get_ride_request_query(request):
     user = request.user
-    query = Q(is_confirmed=False) & ~Q(owner__exact=user) & ~Q(share_user__exact=user)
+    query = Q(status='pending') & ~Q(owner__exact=user) & ~Q(share_user__exact=user)
     rides = RideModel.objects.filter(query)
     return rides
 
@@ -172,7 +173,7 @@ def ride_info_view(request, ride_id):
         # Update ride driver info
         ride.driver = request.user
         # Update ride to be confirmed
-        ride.is_confirmed = True
+        ride.status = 'confirmed'
         ride.save()
         time = ride.arrival_time.strftime("%Y-%m-%d %H:%M")
         # send email to ride owner
@@ -210,7 +211,7 @@ def search_ride_request(request):
     vehicle_type_filtered = request.GET.get('vehicle_type')
     cars = CarModel.objects.filter(Q(user__exact=user))
     cars_values = cars.values_list('vehicle_type',flat=True) 
-    query = (~Q(owner__exact=user)&Q(is_confirmed=False)&
+    query = (~Q(owner__exact=user)&Q(status='pending')&
              (Q(destination__icontains=q)|
               Q(total_passenger__contains=q)|
               Q(departure__icontains=q)))
@@ -236,7 +237,7 @@ def join_ride(request, ride_id):
     if (ride.owner == user or
             ride.share_user.filter(pk=user.pk).exists() or
             ride.driver == user or
-            ride.is_confirmed):
+            ride.status != 'pending'):
         return render(request, 'ride/ride_request.html', context={'fail': True})
 
     # add this user to share_user
@@ -286,4 +287,36 @@ def cancel_share_ride(request, ride_id):
         [ride.owner.email],
         fail_silently=False
     )
+    return redirect(reverse('ride:view_my_ride'))
+
+
+# cancel my driver ride
+@login_required(login_url='/user/login/')
+def cancel_driver_ride(request, ride_id):
+
+    # Valid cancel detect
+    ride = RideModel.objects.get(pk=ride_id)
+    user = request.user
+    if not ride.driver == user:
+        return redirect(reverse('ride:view_my_ride'))
+
+    ride.driver_id = None
+    ride.status = 'pending'
+    ride.save()
+
+    return redirect(reverse('ride:view_my_ride'))
+
+# complete my driver ride
+@login_required(login_url='/user/login/')
+def complete_driver_ride(request, ride_id):
+
+    # Valid cancel detect
+    ride = RideModel.objects.get(pk=ride_id)
+    user = request.user
+    if not ride.driver == user:
+        return redirect(reverse('ride:view_my_ride'))
+
+    ride.status = 'complete'
+    ride.save()
+
     return redirect(reverse('ride:view_my_ride'))

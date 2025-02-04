@@ -80,7 +80,7 @@
                     <th>Vehicle Type</th>
                     <th>Passengers</th>
                     <th>Share</th>
-                    <th>Confirmed</th>
+                    <th>Status</th>
                     <th>Driver</th>
                     <th>Details</th>
                     <th>Actions</th>
@@ -105,18 +105,12 @@
                             <span class="text-danger">&#10007;</span>
                         {% endif %}
                     </td>
-<!--                    <td>{{ ride.vehicle_type }}</td>-->
-<!--                    <td>{{ ride.sp_info }}</td>-->
                     <td>
-                        {% if ride.is_confirmed %}
-                            <span class="text-success">&#10003;</span>
-                        {% else %}
-                            <span class="text-danger">&#10007;</span>
-                        {% endif %}
+                        {{ ride.status}}
                     </td>
                     <td>{{ ride.driver.username }}</td>
-
-                    {% if ride.is_confirmed %}
+                    
+                    {% if not ride.status == 'pending' %}
                     <td>
 <!--                        Details button to show detail-->
                         <a href="{% url 'ride:ride_detail' ride.pk %}" class="btn btn-primary btn-sm">Show</a>
@@ -126,8 +120,8 @@
                         <button class="btn btn-secondary btn-sm" disabled>Show</button>
                     </td>
                     {% endif %}
-
-                    {% if not ride.is_confirmed %}
+                    
+                    {% if ride.status == 'pending' %}
                     <td>
 <!--                        Redirect to a ride revision page-->
                         <a href="{% url 'ride:revise_ride' ride.pk %}" class="btn btn-primary btn-sm">Revise</a>
@@ -141,6 +135,7 @@
                     {% endif %}
                 </tr>
                 {% empty %}
+
                 <!-- Display message if no rides are found -->
                 <tr>
                     <td colspan="11" class="text-center">
@@ -191,18 +186,12 @@
                             <span class="text-danger">&#10007;</span>
                         {% endif %}
                     </td>
-<!--                    <td>{{ ride.vehicle_type }}</td>-->
-<!--                    <td>{{ ride.sp_info }}</td>-->
                     <td>
-                        {% if ride.is_confirmed %}
-                            <span class="text-success">&#10003;</span>
-                        {% else %}
-                            <span class="text-danger">&#10007;</span>
-                        {% endif %}
+                        {{ ride.status }}
                     </td>
                     <td>{{ ride.driver.username }}</td>
 
-                    {% if ride.is_confirmed %}
+                    {% if not ride.status == 'pending' %}
                     <td>
 <!--                        Details button to show detail-->
                         <a href="{% url 'ride:ride_detail' ride.pk %}" class="btn btn-primary btn-sm">Show</a>
@@ -213,7 +202,7 @@
                     </td>
                     {% endif %}
 
-                    {% if not ride.is_confirmed %}
+                    {% if ride.status == 'pending' %}
                     <td>
 <!--                        Redirect to a ride revision page-->
                         <a href="{% url 'ride:cancel_share_ride' ride.pk %}" class="btn btn-danger btn-sm">Cancel</a>
@@ -252,7 +241,7 @@
                     <th>Destination</th>
                     <th>Arrival Time</th>
                     <th>Passengers</th>
-                    <th>Driver</th>
+                    <th>Status</th>
                     <th>Details</th>
                     <th>Actions</th>
                 </tr>
@@ -265,9 +254,9 @@
                     <td>{{ ride.destination }}</td>
                     <td>{{ ride.arrival_time|date:"d/m/Y H:i" }}</td>
                     <td>{{ ride.total_passenger }}</td>
-                    <td>{{ ride.driver.username }}</td>
+                    <td>{{ ride.status }}</td>
 
-                    {% if ride.is_confirmed %}
+                    {% if not ride.status == 'pending' %}
                     <td>
 <!--                        Details button to show detail-->
                         <a href="{% url 'ride:ride_info' ride.pk %}?show_info_only=True" class="btn btn-primary btn-sm">Show</a>
@@ -278,15 +267,15 @@
                     </td>
                     {% endif %}
 
-                    {% if not ride.is_confirmed %}
+                    {% if ride.status == 'confirmed' %}
                     <td>
 <!--                        Redirect to a ride revision page-->
-                        <a href="{% url 'ride:revise_ride' ride.pk %}" class="btn btn-primary btn-sm">Revise</a>
-                        <a href="{% url 'ride:cancel_share_ride' ride.pk %}" class="btn btn-danger btn-sm">Cancel</a>
+                        <a href="{% url 'ride:complete_driver_ride' ride.pk %}" class="btn btn-primary btn-sm">Complete</a>
+                        <a href="{% url 'ride:cancel_driver_ride' ride.pk %}" class="btn btn-danger btn-sm">Cancel</a>
                     </td>
                     {% else %}
                     <td>
-                        <button class="btn btn-secondary btn-sm" disabled>Revise</button>
+                        <button class="btn btn-secondary btn-sm" disabled>Complete</button>
                         <button class="btn btn-secondary btn-sm" disabled>Cancel</button>
                     </td>
                     {% endif %}

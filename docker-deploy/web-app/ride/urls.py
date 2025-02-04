@@ -42,4 +42,10 @@ urlpatterns = [
 
     # cancel my share ride
     path('cancel_share_ride/<int:ride_id>', views.cancel_share_ride, name='cancel_share_ride'),
+
+    # cancel my driver ride
+    path('cancel_driver_ride/<int:ride_id>', views.cancel_driver_ride, name='cancel_driver_ride'),
+
+    # complete my driver ride
+    path('complete_driver_ride/<int:ride_id>', views.complete_driver_ride, name='complete_driver_ride'),
 ]

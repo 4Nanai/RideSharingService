@@ -8,7 +8,7 @@ from django.utils.timezone import now
 class NewRideForm(forms.ModelForm):
     class Meta:
         model = RideModel
-        exclude = ['is_confirmed', 'owner', 'driver', 'share_user']
+        exclude = ['owner', 'driver', 'share_user', 'status']
         VEHICLE_CHOICES = [('any','Any'),
                            ('suv','SUV'), 
                            ('pika','Pika'), 
@@ -40,12 +40,13 @@ class NewRideForm(forms.ModelForm):
         self.fields['arrival_time'].input_formats = ['%Y-%m-%dT%H:%M']
 
     def clean(self):
+        status = self.instance.status
+        
         cleaned_data = super().clean()
-        is_confirmed = cleaned_data.get('is_confirmed')
         departure = cleaned_data.get('departure')
         dest = cleaned_data.get('destination')
         total_passenger = cleaned_data.get('total_passenger')
-        if is_confirmed:
+        if status != 'pending':
             raise forms.ValidationError('You cannot revise a confirmed ride.')
         if dest == departure:
             raise forms.ValidationError({'destination': 'Destination and departure place cannot be the same.'})

@@ -22,14 +22,14 @@
                                 You are not a <strong>Driver</strong>.
                             </div>
                             <div>
-                                <a href="{% url 'user:display_car' %}" class="btn alert-secondary float-right">戻る</a>
+                                <a href="{% url 'user:display_car' %}" class="btn alert-secondary float-right">Back</a>
                             </div>
                         {% elif fail %}
                             <div class="alert alert-warning" role="alert">
                                 You still have confirmed <strong>RIDES</strong> ongoning.<br>Driver status cannot be cancelled.
                             </div>
                             <div class="test-center">
-                                <a href="{% url 'user:display_car' %}" class="btn alert-secondary float-right">戻る</a>
+                                <a href="{% url 'user:display_car' %}" class="btn alert-secondary float-right">Back</a>
                             </div>
                         {% else %}
                             <div class="alart alart-danger" role="alert">

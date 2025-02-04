@@ -31,6 +31,16 @@
                                     <td>{{ ride.owner }}</td>
                                 </tr>
                                 <tr>
+                                    <td>Ride Sharer</td>
+                                    <td>
+                                        {% for sharer in ride.share_user.all %}
+                                        {{ sharer.username }} (1){% if not forloop.last %}, {% endif %}
+                                        {% empty %}
+                                        No share user currently
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Departure</td>
                                     <td>{{ ride.departure }}</td>
                                 </tr>
@@ -60,7 +70,7 @@
                         <!-- Submit Button -->
                         {% if show_info_only %}
                             <div class="text-right">
-                                <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'ride:view_my_ride' %}'">戻る</button>
+                                <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'ride:view_my_ride' %}'">Back</button>
                             </div>
                         {% else %}
                             <div class="text-center">

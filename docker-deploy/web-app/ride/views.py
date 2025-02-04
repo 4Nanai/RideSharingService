@@ -1,6 +1,7 @@
 from traceback import print_tb
 
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import render, redirect, reverse
 from .forms import NewRideForm
@@ -161,7 +162,6 @@ def ride_requests_view(request):
 @login_required(login_url='/user/login/')
 @require_http_methods(['GET', 'POST'])
 def ride_info_view(request, ride_id):
-    # TODO: limitation required
     if not request.user.is_driver:
         return redirect(reverse('index'))
     ride = RideModel.objects.get(pk=ride_id)
@@ -169,9 +169,35 @@ def ride_info_view(request, ride_id):
         show_info_only = request.GET.get('show_info_only')
         return render(request, 'ride/ride_info.html', context={'ride': ride, 'show_info_only': show_info_only})
     else:
+        # Update ride driver info
         ride.driver = request.user
+        # Update ride to be confirmed
         ride.is_confirmed = True
         ride.save()
+        time = ride.arrival_time.strftime("%Y-%m-%d %H:%M")
+        # send email to ride owner
+        share_user = [user.username for user in ride.share_user.all() if user.email]
+        share_user_str = ', '.join(share_user)
+        send_mail(
+            'Ride Sharing System Ride Confirmation',
+            f'Your ride from {ride.departure} to {ride.destination} at {time} has been confirmed.\nDriver: {request.user.username}\nVehicle Type: {request.user.cars.first().vehicle_type}\nShare users: {share_user_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
+            '<EMAIL>',
+            [ride.owner.email],
+            fail_silently=False
+        )
+        # send email to share user
+        share_user_emails = [user.email for user in ride.share_user.all() if user.email]
+        for email in share_user_emails:
+            # get other share user info
+            other_share_users = ride.share_user.exclude(email=email).values_list('username', flat=True)
+            other_share_str = ', '.join(other_share_users) if other_share_users else 'None'
+            send_mail(
+                'Ride Sharing System Ride Confirmation',
+                f'Your share ride from {ride.departure} to {ride.destination} at {time} has been confirmed.\nDriver: {request.user.username}\nVehicle Type: {request.user.cars.first().vehicle_type}\nRide owner: {ride.owner.username}\nOther share users: {other_share_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
+                '<EMAIL>',
+                [email],
+                fail_silently=False
+            )
         return render(request, 'ride/ride_info.html', context={'ride': ride, 'success': True})
 
 @require_http_methods('GET')
@@ -218,6 +244,18 @@ def join_ride(request, ride_id):
     ride.total_passenger += 1
     ride.share_user.add(user)
     ride.save()
+
+    # email user owner
+    # provide share user info
+    share_user = [user.username for user in ride.share_user.all() if user.email]
+    share_user_str = ', '.join(share_user)
+    send_mail(
+        'Ride Sharing System Share Ride Request Update',
+        f'A new member {user.username} has joined your share ride request.\nCurrent share users: {share_user_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
+        '<EMAIL>',
+        [ride.owner.email],
+        fail_silently=False
+    )
     return render(request, 'ride/ride_request.html', context={'success': True})
 
     
@@ -236,4 +274,16 @@ def cancel_share_ride(request, ride_id):
     ride.share_user.remove(user)
     ride.total_passenger -= 1
     ride.save()
+
+    # email ride owner
+    # provide cancel user info
+    share_user = [user.username for user in ride.share_user.all() if user.email]
+    share_user_str = ', '.join(share_user)
+    send_mail(
+        'Ride Sharing System Share Ride Request Update',
+        f'The member {user.username} logged out of your share ride request.\nCurrent share users: {share_user_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
+        '<EMAIL>',
+        [ride.owner.email],
+        fail_silently=False
+    )
     return redirect(reverse('ride:view_my_ride'))

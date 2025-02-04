@@ -12,4 +12,5 @@ urlpatterns = [
     path('car/delete/<int:pk>/', views.delete_car_view.as_view(), name='delete_car'),
     path('car/info/', views.display_car_view, name='display_car'),
     path('driver/delete/', views.cancel_driver_view, name='delete_driver'),
+    path('register/captcha/', views.send_email, name='captcha'),
 ]

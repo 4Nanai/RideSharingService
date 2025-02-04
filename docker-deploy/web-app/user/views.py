@@ -1,17 +1,70 @@
+import json
+import string
+from datetime import timedelta
 from http.client import responses
-
+from django.http.response import JsonResponse
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory
 from django.shortcuts import render, redirect, reverse, HttpResponse, get_object_or_404
 from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DeleteView
 
 from .forms import RegisterForm, LoginForm, DriverRegisterForm, CarForm
 from django.views.decorators.http import require_http_methods
-from .models import RSSUser, CarModel
-
+from .models import RSSUser, CarModel, CaptchaModel
+from django.core.mail import send_mail
+import _string
+import random
 # Create your views here.
+@require_http_methods(['POST'])
+def send_email(request):
+    # only post request is allowed
+    if request.method != 'POST':
+        return JsonResponse({'code': 405, 'msg': 'Method not allowed'}, status=405)
+
+    try:
+        # Parse the JSON request body
+        data = json.loads(request.body)
+        email = data.get('email')
+    except json.JSONDecodeError:
+        return JsonResponse({'code': 400, 'msg': 'Invalid JSON format'}, status=400)
+
+    # validate email
+    if not email:
+        return JsonResponse({'code': 400, 'msg': 'Email is required'}, status=400)
+
+    # validate frequency
+    if CaptchaModel.objects.filter(
+        email=email,
+        create_time__gt=timezone.now() - timedelta(seconds=60)
+    ).exists():
+        return JsonResponse({'code': 400, 'msg': 'Do not request frequently'}, status=400)
+
+    # generate captcha
+    captcha = "".join(random.sample(string.digits, 6))
+    CaptchaModel.objects.update_or_create(
+        email=email,
+        defaults={'captcha': captcha, 'create_time': timezone.now()}
+    )
+
+    # send email
+    try:
+        send_mail(
+            'Ride Sharing System Register',
+            f'Your CAPTCHA is {captcha}\n Please do not share this CAPTCHA with anyone else.\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
+            '<EMAIL>',
+            [email],
+            fail_silently=False
+        )
+    # error handler
+    except Exception as e:
+        return JsonResponse({'code': 500, 'msg': f'Sending email failed: {str(e)}'}, status=500)
+
+    return JsonResponse({'code': 200, 'msg': 'Email sent'})
+
 @require_http_methods(['GET', 'POST'])
 def register_view(request):
     if request.user.is_authenticated:
@@ -25,10 +78,12 @@ def register_view(request):
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('pwd2')
-            RSSUser.objects.create_user(username=username, password=password)
+            email = form.cleaned_data.get('email')
+            RSSUser.objects.create_user(email=email, username=username, password=password)
             return redirect(reverse('user:login'))
         else:
             context = {'form': form}
+            print(form.errors)
             return render(request, 'user/register.html', context=context)
 
 @require_http_methods(['GET', 'POST'])

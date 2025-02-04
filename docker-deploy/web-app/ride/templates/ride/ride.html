@@ -76,7 +76,7 @@
                     <th>#</th>
                     <th>Departure</th>
                     <th>Destination</th>
-                    <th>Expected Arrival Time</th>
+                    <th>Arrival Time</th>
                     <th>Vehicle Type</th>
                     <th>Passengers</th>
                     <th>Share</th>
@@ -92,9 +92,9 @@
                     <td>{{ forloop.counter }}</td>
                     <td>{{ ride.departure }}</td>
                     <td>{{ ride.destination }}</td>
-                    <td>{{ ride.arrival_time }}</td>
+                    <td>{{ ride.arrival_time|date:"d/m/Y H:i" }}</td>
                     <td>{{ ride.vehicle_type }}</td>
-                  
+
 {#                  TODO: add a view to show shared users#}
 
                     <td>{{ ride.total_passenger }}</td>
@@ -165,7 +165,7 @@
                     <th>#</th>
                     <th>Departure</th>
                     <th>Destination</th>
-                    <th>Expected Arrival Time</th>
+                    <th>Arrival Time</th>
                     <th>Vehicle Type</th>
                     <th>Passengers</th>
                     <th>Share</th>
@@ -181,7 +181,7 @@
                     <td>{{ forloop.counter }}</td>
                     <td>{{ ride.departure }}</td>
                     <td>{{ ride.destination }}</td>
-                    <td>{{ ride.arrival_time }}</td>
+                    <td>{{ ride.arrival_time|date:"d/m/Y H:i" }}</td>
                     <td>{{ ride.vehicle_type }}</td>
                     <td>{{ ride.total_passenger }}</td>
                     <td>
@@ -250,7 +250,7 @@
                     <th>#</th>
                     <th>Departure</th>
                     <th>Destination</th>
-                    <th>Expected Arrival Time</th>
+                    <th>Arrival Time</th>
                     <th>Passengers</th>
                     <th>Driver</th>
                     <th>Details</th>
@@ -263,7 +263,7 @@
                     <td>{{ forloop.counter }}</td>
                     <td>{{ ride.departure }}</td>
                     <td>{{ ride.destination }}</td>
-                    <td>{{ ride.arrival_time }}</td>
+                    <td>{{ ride.arrival_time|date:"d/m/Y H:i" }}</td>
                     <td>{{ ride.total_passenger }}</td>
                     <td>{{ ride.driver.username }}</td>
 

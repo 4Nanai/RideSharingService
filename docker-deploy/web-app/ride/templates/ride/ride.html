@@ -110,7 +110,7 @@
                     </td>
                     <td>{{ ride.driver.username }}</td>
                     
-                    {% if not ride.status == 'pending' %}
+                    {% if not ride.status == null %}
                     <td>
 <!--                        Details button to show detail-->
                         <a href="{% url 'ride:ride_detail' ride.pk %}" class="btn btn-primary btn-sm">Show</a>
@@ -191,7 +191,7 @@
                     </td>
                     <td>{{ ride.driver.username }}</td>
 
-                    {% if not ride.status == 'pending' %}
+                    {% if not ride.status == null %}
                     <td>
 <!--                        Details button to show detail-->
                         <a href="{% url 'ride:ride_detail' ride.pk %}" class="btn btn-primary btn-sm">Show</a>
@@ -256,7 +256,7 @@
                     <td>{{ ride.total_passenger }}</td>
                     <td>{{ ride.status }}</td>
 
-                    {% if not ride.status == 'pending' %}
+                    {% if not ride.status == null %}
                     <td>
 <!--                        Details button to show detail-->
                         <a href="{% url 'ride:ride_info' ride.pk %}?show_info_only=True" class="btn btn-primary btn-sm">Show</a>

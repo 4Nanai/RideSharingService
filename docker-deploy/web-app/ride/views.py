@@ -93,8 +93,11 @@ def ride_detail_view(request, ride_id):
     if ride.owner != user and not ride.share_user.filter(pk=user.pk).exists():
         return redirect(reverse('ride:view_my_ride'))
     driver = ride.driver
-    cars = driver.cars.all()
-    return render(request, 'user/display_car_info.html', context={'cars': cars, 'to_guest': True})
+    cars = None
+    if driver != None:
+        cars = driver.cars.all()
+
+    return render(request, 'ride/ride_info_user_side.html', context={'cars': cars, 'to_guest': True, 'ride':ride})
 
 @login_required(login_url='user/login')
 @require_http_methods(['GET','POST'])

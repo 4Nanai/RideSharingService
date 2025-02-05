@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from logging.handlers import TimedRotatingFileHandler
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -139,3 +141,63 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = ''
+
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {  # log format
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': { 
+        'debug_file': {  # the file write to
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_debug.log'),  # log files path
+            'when': 'D',  # rotate by day
+            'interval': 1,  # rotate every day
+            'backupCount': 7,  # keep closet 7 files
+            'formatter': 'verbose',
+        },
+        'info_file': {  # the file write to
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_info.log'),  # log files path
+            'when': 'D',  # rotate by day
+            'interval': 1,  # rotate every day
+            'backupCount': 7,  # keep closet 7 files
+            'formatter': 'verbose',
+        },
+        'danger_file': {  # the file write to
+            'level': 'WARNING',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_danger.log'),  # log files path
+            'when': 'D',  # rotate by day
+            'interval': 1,  # rotate every day
+            'backupCount': 7,  # keep closet 7 files
+            'formatter': 'verbose',
+        },
+        'console': {  # console output
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': { 
+        'django': {
+            'handlers': ['info_file', 'debug_file','danger_file','console'],  # output to console and file
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

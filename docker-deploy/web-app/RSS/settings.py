@@ -81,8 +81,8 @@ DATABASES = {
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": "password",
-        "HOST": "127.0.0.1",
-        "PORT": "",
+        "HOST": "db",
+        "PORT": "5432",
     }
 }
 
@@ -139,3 +139,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = ''
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+]

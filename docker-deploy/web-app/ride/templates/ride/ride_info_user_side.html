@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Info</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 20px;
+        }
+        h3 {
+            text-align: left;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .table-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .table thead th {
+            background-color: #343a40;
+            color: white;
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container table-container">
+        {% if to_guest %}
+            <h3>Cars Info</h3>
+        {% else %}
+            <h3>Your Cars Info</h3>
+        {% endif %}
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>No.</th>
+                    {% if to_guest %}
+                    <th>Driver</th>
+                    {% endif %}
+                    <th>Vehicle Type</th>
+                    <th>Vehicle Number</th>
+                    <th>Maximum Passenger</th>
+                    <th>Special Vehicle Info</th>
+                    {% if not to_guest %}
+                    <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for car in cars %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    {% if to_guest %}
+                    <th>{{ car.user }}</th>
+                    {% endif %}
+                    <td>{{ car.vehicle_type }}</td>
+                    <td>{{ car.vehicle_number }}</td>
+                    <td>{{ car.max_passenger }}</td>
+                    <td>{{ car.sp_info }}</td>
+                    {% if not to_guest %}
+                    <td>
+                        <a href="{% url 'user:revise_info' car.pk %}" class="btn alert-warning">Revise</a>
+                        <a href="{% url 'user:delete_car' car.pk %}" class="btn alert-danger">Delete</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center">
+                            No driver found now.
+                            {% comment %} <a href="{% url 'user:register_driver' %}" class="badge alert-primary">Click here</a> to register as a Driver. {% endcomment %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
+    {% comment %} <div class="text-right">
+        {% if not to_guest %}
+        <a href="{% url 'index' %}" class="btn btn-secondary" style="margin-right: 10%; margin-top: 10px">Back</a>
+        {% else %}
+        <a href="{% url 'ride:view_my_ride' %}" class="btn btn-secondary" style="margin-right: 10%; margin-top: 10px">Back</a>
+        {% endif %}
+    </div> {% endcomment %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white text-center">
+            <h3>View Ride Request Info</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Attribute</th>
+                        <th scope="col">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ride Owner</td>
+                        <td>{{ ride.owner }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ride Sharers</td>
+                        <td>
+                            {% for sharers in ride.share_user.all %}
+                            {{sharers.username}}(1) {%if not forloop.last%}, {%endif%}
+                            {%empty%}
+                            No sharers currently
+                            {%endfor%}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Departure</td>
+                        <td>{{ ride.departure }}</td>
+                    </tr>
+                    <tr>
+                        <td>Destination</td>
+                        <td>{{ ride.destination }}</td>
+                    </tr>
+                    <tr>
+                        <td>Expected Arrival Time</td>
+                        <td>{{ ride.arrival_time }}</td>
+                    </tr>
+                    <tr>
+                        <td>total_passenger</td>
+                        <td>{{ ride.total_passenger }}</td>
+                    </tr>
+                    <tr>
+                        <td>vehicle type</td>
+                        <td>{{ ride.vehicle_type }}</td>
+                    </tr>
+                    <tr>
+                        <td>sp_info</td>
+                        <td>{{ ride.sp_info }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+            <!-- Submit Button -->
+            
+            <script>
+                // if POST check SUCCESS
+                {% if success %}
+                alert("Submit success!");
+                // redirect url
+                window.location.href = "{% url 'ride:view_my_ride' %}";
+                {% endif %}
+            </script>
+        </div>
+    </div>
+    <div style="width: 200px; margin: 0 auto; text-align: center;">
+        {% if not to_guest %}
+        <a href="{% url 'index' %}" class="btn btn-secondary" style="margin-right: 10%; margin-top: 10px">Back</a>
+        {% else %}
+        <a href="{% url 'ride:view_my_ride' %}" class="btn btn-secondary" style="margin-right: 10%; margin-top: 10px">Back</a>
+        {% endif %}
+    </div>
+</div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

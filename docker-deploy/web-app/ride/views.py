@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.shortcuts import render, redirect, reverse
 from .forms import NewRideForm
 from django.views.decorators.http import require_http_methods
+from django.contrib import messages
 from .models import RideModel
 from user.models import CarModel
 # Create your views here.
@@ -176,7 +177,11 @@ def ride_info_view(request, ride_id):
         # Update ride driver info
         ride.driver = request.user
         # Update ride to be confirmed
-        ride.status = 'confirmed'
+        try:
+            ride.confirm()
+        except:
+            return render(request, 'ride/ride_info.html', context={'ride': ride, 'success': False})
+            pass
         ride.save()
         time = ride.arrival_time.strftime("%Y-%m-%d %H:%M")
         # send email to ride owner
@@ -304,7 +309,11 @@ def cancel_driver_ride(request, ride_id):
         return redirect(reverse('ride:view_my_ride'))
 
     ride.driver_id = None
-    ride.status = 'pending'
+    try:
+        ride.cancel()
+    except:
+        messages.error(request, "Error:cancel fail")
+        return redirect(reverse('ride:view_my_ride'))
     ride.save()
 
     return redirect(reverse('ride:view_my_ride'))
@@ -319,7 +328,11 @@ def complete_driver_ride(request, ride_id):
     if not ride.driver == user:
         return redirect(reverse('ride:view_my_ride'))
 
-    ride.status = 'complete'
+    try:
+        ride.complete()
+    except:
+        messages.error(request, "Error:complete fail")
+        return redirect(reverse('ride:view_my_ride'))
     ride.save()
 
     return redirect(reverse('ride:view_my_ride'))

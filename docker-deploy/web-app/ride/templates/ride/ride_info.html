@@ -88,6 +88,12 @@
                             // redirect url
                             window.location.href = "{% url 'ride:view_my_ride' %}";
                             {% endif %}
+                            {% comment %} if confirm failed {% endcomment %}
+                            {% if fail %}
+                            alert("Confirm failed! You can not confirm a confirmed ride. Please try refresh!");
+                            {% comment %} redirect url {% endcomment %}
+                            window.location.href = "{% url 'ride:ride_requests' %}";
+                            {% endif %}
                         </script>
                     </div>
                 </div>

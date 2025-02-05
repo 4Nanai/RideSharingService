@@ -1,6 +1,7 @@
 from django.db import models
 from user.models import RSSUser
 from django.utils.timezone import now
+from django_fsm import transition, FSMField
 # Create your models here.
 
 class RideModel(models.Model):
@@ -16,10 +17,10 @@ class RideModel(models.Model):
 
     STATUS_CHOICES = [
         ('pending', 'pending'),
-        ('comfirmed','comfirmed'),
+        ('confirmed','confirmed'),
         ('complete','complete')
     ]
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
+    status = FSMField(protected=True, choices=STATUS_CHOICES, default='pending')
 
     pub_time = models.DateTimeField(auto_now_add=True)
 
@@ -29,3 +30,16 @@ class RideModel(models.Model):
 
     class Meta:
         ordering = ['-pub_time', 'status']
+
+
+    @transition(field=status, source='pending', target='confirmed')
+    def confirm(self):
+        pass
+
+    @transition(field=status, source='confirmed', target='complete')
+    def complete(self):
+        pass
+
+    @transition(field=status, source='confirmed', target='pending')
+    def cancel(self):
+        pass

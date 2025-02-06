@@ -11,7 +11,12 @@ services:
             - data-volume:/var/lib/postgresql/data
   web-init:
       build: ./web-app
-      command: /code/initserver.sh
+      command:
+        - sh
+        - -c
+        - "/code/initserver.sh
+            && chown nobody:nogroup /code/logs/*.log
+            && chmod 666 /code/logs/*.log"
       volumes:
         - ./web-app:/code
       environment:

@@ -1,2 +1,4 @@
 Django>3.0
-psycopg2
+psycopg2==2.9.10
+django-fsm==3.0.0
+click==8.0.3

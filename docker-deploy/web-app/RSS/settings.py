@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-#+bn9xvzwv%&=-yoe(k(zsel_#d@=cm##=)15=djyi#r+-(u4f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['web', '127.0.0.1', 'localhost', '4nanai.ddns.net']
+ALLOWED_HOSTS = ['web', '127.0.0.1', 'localhost', '4nanai.ddns.net', '129.159.95.165']
 
 
 # Application definition
@@ -134,14 +134,16 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email Settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-DEFAULT_FROM_EMAIL = ''
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://4nanai.ddns.net:8000',
+]
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(LOG_DIR):

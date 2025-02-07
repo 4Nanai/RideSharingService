@@ -16,10 +16,16 @@ from RSS.Email import *
 from .forms import RegisterForm, LoginForm, DriverRegisterForm, CarForm
 from .models import RSSUser, CarModel, CaptchaModel
 
+import _string
+import random
+import logging
+logger = logging.getLogger('django')
+
 
 # Create your views here.
 @require_http_methods(['POST'])
 def send_email(request):
+    
     # only post request is allowed
     if request.method != 'POST':
         return JsonResponse({'code': 405, 'msg': 'Method not allowed'}, status=405)
@@ -54,8 +60,10 @@ def send_email(request):
         service = gmail_authenticate()
         send_message(service, "4nanaiiyo@gmail.com", email, "Ride Sharing System Register",
                      f'<div>Your CAPTCHA is {captcha}</div><div>Please do not share this CAPTCHA with anyone else.</div><br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
+        logger.info(f"sending email to {email} success!")
     # error handler
     except Exception as e:
+        logger.error(f"sending email to {email} fail!")
         return JsonResponse({'code': 500, 'msg': f'Sending email failed: {str(e)}'}, status=500)
 
     return JsonResponse({'code': 200, 'msg': 'Email sent'})
@@ -75,10 +83,12 @@ def register_view(request):
             password = form.cleaned_data.get('pwd2')
             email = form.cleaned_data.get('email')
             RSSUser.objects.create_user(email=email, username=username, password=password)
+            logger.warning(f"user ({username}) created successfully!")
             return redirect(reverse('user:login'))
         else:
             context = {'form': form}
             print(form.errors)
+            logger.warning(f"fail to create user ({username})")
             return render(request, 'user/register.html', context=context)
 
 @require_http_methods(['GET', 'POST'])
@@ -101,14 +111,18 @@ def login_view(request):
                 # if not remember
                 if not remember:
                     request.session.set_expiry(0)
+                logger.warning(f"user ({username}) log in successfully!")
                 return redirect(reverse('index'))
             else:
+                logger.warning(f"user ({username}) fail to log in!")
                 return render(request, 'user/login.html', context={'form' : form})
         else:
             return render(request, 'user/login.html', context={'form' : form})
 
 def logout_view(request):
+    user=request.user
     logout(request)
+    logger.warning(f"user ({user}) succeed to log out")
     return redirect(reverse('index'))
 
 @require_http_methods(['GET', 'POST'])
@@ -140,8 +154,10 @@ def register_driver_view(request):
                                     max_passenger=max_passenger,
                                     sp_info=sp_info)
             user.save()
+            logger.warning(f"user succeed to register new vihecle: {vehicle_type} ({vehicle_number})" )
             return render(request, 'user/driver_register.html', context={'form': form, 'success': True})
         else:
+            logger.warning(f"user failed to register new vihecle: {vehicle_type} ({vehicle_number})" )
             return render(request, 'user/driver_register.html', context={'form': form})
 
 @require_http_methods(['GET', 'POST'])
@@ -155,8 +171,10 @@ def revise_car_view(request, pk):
         form = CarForm(request.POST, instance=car)
         if form.is_valid():
             form.save()
+            logger.warning(f"user {request.user} succeed to revise vehicle {car.vehicle_type} {car.vehicle_number}")
             return render(request, 'user/revise_car_info.html', context={'form': form, 'is_success': True})
         else:
+            logger.warning(f"user {request.user} failed to revise vehicle {car.vehicle_type} {car.vehicle_number}")
             return render(request, 'user/revise_car_info.html', context={'form': form, 'is_success': False})
 
 class delete_car_view(DeleteView):
@@ -191,7 +209,9 @@ def cancel_driver_view(request):
         else:
             return render(request, 'user/confirm_driver_delete.html', context={'not_driver': True})
     else:
+        logger.warning(f"user ({user}) try to delete vehicle")
         user.is_driver = False
         CarModel.objects.filter(user=user).delete()
         user.save()
+        logger.warning(f"user ({user}) succeed to delete vehicle")
         return render(request, 'user/confirm_driver_delete.html', context={'success': True})

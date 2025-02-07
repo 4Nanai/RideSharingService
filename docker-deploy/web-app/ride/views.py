@@ -1,4 +1,6 @@
 from traceback import print_tb
+import logging
+logger = logging.getLogger('django')
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -38,6 +40,7 @@ def new_ride_view(request):
                                      vehicle_type=vehicle_type,
                                      sp_info=sp_info,
                                      owner=owner)
+            logger.info(f"user ({request.user}) try to pub a new ride")
             return render(request, 'ride/new_ride.html', context={'form': form, 'success': True})
         else:
             return render(request, 'ride/new_ride.html', context={'form': form, 'success': False})
@@ -64,6 +67,7 @@ def revise_ride_info(request, ride_id):
         if form.is_valid():
             form.owner = request.user
             form.save()
+            logger.warning(f"user ({request.user}) succeed to revise ride ({ride_id})")
             return render(request, 'ride/revise_ride.html', context={'form': form, 'success': True})
         else:
             return render(request, 'ride/revise_ride.html', context={'form': form, 'success': False})
@@ -106,11 +110,13 @@ def ride_delete_view(request, ride_id):
     ride = RideModel.objects.get(pk=ride_id)
     user = request.user
     if user != ride.owner:
+        logger.warning(f"user ({request.user}) try to revise ride ({ride_id}) of user ({ride.owner})")
         return redirect(reverse('ride:view_my_ride'))
     if request.method == 'GET':
         return render(request,'ride/delete_ride.html', context={'ride': ride})
     else:
         ride.delete()
+        logger.warning(f"user ({request.user}) succeed to delete ride ({ride_id})")
         return render(request, 'ride/delete_ride.html', context={'success': True})
 
 def share_ride_view(request):
@@ -183,6 +189,9 @@ def ride_info_view(request, ride_id):
             return render(request, 'ride/ride_info.html', context={'ride': ride, 'success': False})
             pass
         ride.save()
+        
+        logger.warning(f"user ({request.user}) succeed to confirm ride ({ride_id})")
+
         time = ride.arrival_time.strftime("%Y-%m-%d %H:%M")
         # send email to ride owner
         share_user = [user.username for user in ride.share_user.all() if user.email]
@@ -246,6 +255,8 @@ def join_ride(request, ride_id):
     ride.share_user.add(user)
     ride.save()
 
+    logger.warning(f"user ({request.user}) succeed to join ride ({ride_id})")
+
     # email user owner
     # provide share user info
     share_user = [user.username for user in ride.share_user.all() if user.email]
@@ -272,6 +283,8 @@ def cancel_share_ride(request, ride_id):
     ride.share_user.remove(user)
     ride.total_passenger -= 1
     ride.save()
+
+    logger.warning(f"user ({request.user}) succeed to cancel share ride ({ride_id})")
 
     # email ride owner
     # provide cancel user info
@@ -309,6 +322,7 @@ def cancel_driver_ride(request, ride_id):
         messages.error(request, "Error:cancel fail")
         return redirect(reverse('ride:view_my_ride'))
     ride.save()
+    logger.warning(f"user ({request.user}) succeed to cancel driver ride ({ride_id})")
     return redirect(reverse('ride:view_my_ride'))
 
 # complete my driver ride
@@ -330,5 +344,7 @@ def complete_driver_ride(request, ride_id):
         messages.error(request, "Error:complete fail")
         return redirect(reverse('ride:view_my_ride'))
     ride.save()
+
+    logger.warning(f"user ({request.user}) succeed to complete ride ({ride_id})")
 
     return redirect(reverse('ride:view_my_ride'))

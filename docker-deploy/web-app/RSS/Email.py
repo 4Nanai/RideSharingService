@@ -1,4 +1,5 @@
 import os.path
+import os
 import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -11,9 +12,12 @@ from google.oauth2.credentials import Credentials
 def gmail_authenticate():
     SCOPES = ['https://www.googleapis.com/auth/gmail.send']
     creds = None
+    current_dir = os.getcwd()
+    current_dir = os.path.join(current_dir, 'RSS')
+    tokenpath = os.path.join(current_dir, 'token.json')
     # token.json stored user access and refresh tokens
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists(tokenpath):
+        creds = Credentials.from_authorized_user_file(tokenpath, SCOPES)
     # Authentication if no valid credentials are available
     if not creds or not creds.valid:
         print("here1")
@@ -25,14 +29,14 @@ def gmail_authenticate():
             # This credentials.json is the credential you download from Google API portal when you
             # created the OAuth 2.0 Client IDs
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                os.path.join(current_dir ,'credentials.json'), SCOPES)
             # this is the redirect URI which should match your API setting, you can
             # find this setting in Credentials/Authorized redirect URIs at the API setting portal
             print("here4")
-            creds = flow.run_local_server(port=49720)
+            creds = flow.run_local_server(port=49720, open_browser=False)
             print("here5")
         # Save vouchers for later use
-        with open('token.json', 'w') as token:
+        with open(tokenpath, 'w') as token:
             print("write")
             token.write(creds.to_json())
 
@@ -56,5 +60,5 @@ def send_message(service, sender, to, subject, msg_html):
     print(f"Message Id: {message['id']}")
 
 # Using Gmail API
-service = gmail_authenticate()
-# send_message(service, "YOUR_ACCOUNT@XXX.com", "TARGET_ACCOUNT@XXX.com", "Test Email", "<h1>This is a test using Gmail API</h1>")
+# service = gmail_authenticate()
+# send_message(service, "4nanaiiyo@gmail.com", "yy465@duke.edu", "Test Email", "<h1>This is a test using Gmail API</h1>")

@@ -54,9 +54,9 @@ def send_email(request):
     # send email
     try:
         service = gmail_authenticate()
-        # send_message(service, "ce568-rsservice-email-service@ece568-rss-email.iam.gserviceaccount.com", "103087652@qq.com", "Test Email",
-        #              "<h1>This is a test using Gmail API</h1>")
-        # print("try send.")
+        send_message(service, "4nanaiiyo@gmail.com", "103087652@qq.com", "Test Email",
+                     "<h1>This is a test using Gmail API</h1>")
+        print("try send.")
         send_mail(
             'Ride Sharing System Register',
             f'Your CAPTCHA is {captcha}\n Please do not share this CAPTCHA with anyone else.\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',

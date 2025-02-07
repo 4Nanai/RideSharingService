@@ -7,7 +7,9 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-
+import logging
+import os
+logger = logging.getLogger('django')
 # Authentication and service creation
 def gmail_authenticate():
     SCOPES = ['https://www.googleapis.com/auth/gmail.send']
@@ -17,7 +19,9 @@ def gmail_authenticate():
     tokenpath = os.path.join(current_dir, 'token.json')
     # token.json stored user access and refresh tokens
     if os.path.exists(tokenpath):
+        logger.debug("using gmail token...")
         creds = Credentials.from_authorized_user_file(tokenpath, SCOPES)
+        logger.debug("gmail token success!")
     # Authentication if no valid credentials are available
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:

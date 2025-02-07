@@ -10,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from .models import RideModel
 from user.models import CarModel
+from user.models import RSSUser
 from RSS.Email import send_message, gmail_authenticate
 # Create your views here.
 
@@ -159,6 +160,8 @@ def search_share_ride(request):
 def get_ride_request_query(request):
     user = request.user
     query = Q(status='pending') & ~Q(owner__exact=user) & ~Q(share_user__exact=user)
+    max_passenger = CarModel.objects.get(id=user.id).max_passenger
+    query &= Q(total_passenger__lt=max_passenger)
     rides = RideModel.objects.filter(query)
     return rides
 

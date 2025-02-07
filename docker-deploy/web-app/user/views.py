@@ -1,24 +1,22 @@
 import json
+import random
 import string
 from datetime import timedelta
-from http.client import responses
-from django.http.response import JsonResponse
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.forms import modelformset_factory
-from django.shortcuts import render, redirect, reverse, HttpResponse, get_object_or_404
+from django.http.response import JsonResponse
+from django.shortcuts import render, redirect, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.views.generic import DeleteView
 
-from .forms import RegisterForm, LoginForm, DriverRegisterForm, CarForm
-from django.views.decorators.http import require_http_methods
-from .models import RSSUser, CarModel, CaptchaModel
-from django.core.mail import send_mail
-import _string
-import random
 from RSS.Email import *
+from .forms import RegisterForm, LoginForm, DriverRegisterForm, CarForm
+from .models import RSSUser, CarModel, CaptchaModel
+
+
 # Create your views here.
 @require_http_methods(['POST'])
 def send_email(request):
@@ -54,16 +52,8 @@ def send_email(request):
     # send email
     try:
         service = gmail_authenticate()
-        send_message(service, "4nanaiiyo@gmail.com", "103087652@qq.com", "Test Email",
-                     "<h1>This is a test using Gmail API</h1>")
-        print("try send.")
-        send_mail(
-            'Ride Sharing System Register',
-            f'Your CAPTCHA is {captcha}\n Please do not share this CAPTCHA with anyone else.\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
-            '<EMAIL>',
-            [email],
-            fail_silently=False
-        )
+        send_message(service, "4nanaiiyo@gmail.com", email, "Ride Sharing System Register",
+                     f'<div>Your CAPTCHA is {captcha}</div><div>Please do not share this CAPTCHA with anyone else.</div><br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
     # error handler
     except Exception as e:
         return JsonResponse({'code': 500, 'msg': f'Sending email failed: {str(e)}'}, status=500)

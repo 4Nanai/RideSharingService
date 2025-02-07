@@ -1,7 +1,6 @@
 from traceback import print_tb
 
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import render, redirect, reverse
 from .forms import NewRideForm
@@ -9,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from .models import RideModel
 from user.models import CarModel
+from RSS.Email import send_message, gmail_authenticate
 # Create your views here.
 
 @require_http_methods(['GET', 'POST'])
@@ -187,26 +187,18 @@ def ride_info_view(request, ride_id):
         # send email to ride owner
         share_user = [user.username for user in ride.share_user.all() if user.email]
         share_user_str = ', '.join(share_user)
-        send_mail(
-            'Ride Sharing System Ride Confirmation',
-            f'Your ride from {ride.departure} to {ride.destination} at {time} has been confirmed.\nDriver: {request.user.username}\nVehicle Type: {request.user.cars.first().vehicle_type}\nShare users: {share_user_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
-            '<EMAIL>',
-            [ride.owner.email],
-            fail_silently=False
-        )
+        service = gmail_authenticate()
+        send_message(service, "4nanaiiyo@gmail.com", ride.owner.email, "Ride Sharing System",
+                     f'<h1>Ride Sharing System Ride Confirmation</h1><div>Your share ride from {ride.departure} to {ride.destination} at {time} has been confirmed.</div><div>Driver: {request.user.username}</div><div>Vehicle Type: {request.user.cars.first().vehicle_type}</div><div>Share users: {share_user_str}</div><br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
         # send email to share user
         share_user_emails = [user.email for user in ride.share_user.all() if user.email]
         for email in share_user_emails:
             # get other share user info
             other_share_users = ride.share_user.exclude(email=email).values_list('username', flat=True)
             other_share_str = ', '.join(other_share_users) if other_share_users else 'None'
-            send_mail(
-                'Ride Sharing System Ride Confirmation',
-                f'Your share ride from {ride.departure} to {ride.destination} at {time} has been confirmed.\nDriver: {request.user.username}\nVehicle Type: {request.user.cars.first().vehicle_type}\nRide owner: {ride.owner.username}\nOther share users: {other_share_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
-                '<EMAIL>',
-                [email],
-                fail_silently=False
-            )
+            service = gmail_authenticate()
+            send_message(service, "4nanaiiyo@gmail.com", email, "Ride Sharing System",
+                         f'<h1>Ride Sharing System Ride Confirmation</h1><div>Your share ride from {ride.departure} to {ride.destination} at {time} has been confirmed.</div><div>Driver: {request.user.username}</div><div>Vehicle Type: {request.user.cars.first().vehicle_type}</div><div>Ride owner: {ride.owner.username}</div><div>Other share users: {other_share_str}</div><br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
         return render(request, 'ride/ride_info.html', context={'ride': ride, 'success': True})
 
 @require_http_methods('GET')
@@ -258,13 +250,10 @@ def join_ride(request, ride_id):
     # provide share user info
     share_user = [user.username for user in ride.share_user.all() if user.email]
     share_user_str = ', '.join(share_user)
-    send_mail(
-        'Ride Sharing System Share Ride Request Update',
-        f'A new member {user.username} has joined your share ride request.\nCurrent share users: {share_user_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
-        '<EMAIL>',
-        [ride.owner.email],
-        fail_silently=False
-    )
+    service = gmail_authenticate()
+    send_message(service, "4nanaiiyo@gmail.com", ride.owner.email, "Ride Sharing System",
+                 f'<h1>Ride Sharing System Share Ride Request Update</h1><div>A new member {user.username} has joined your share ride request.</div><div>Current share users: {share_user_str}</div><br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
+
     return render(request, 'ride/ride_request.html', context={'success': True})
 
     
@@ -288,13 +277,9 @@ def cancel_share_ride(request, ride_id):
     # provide cancel user info
     share_user = [user.username for user in ride.share_user.all() if user.email]
     share_user_str = ', '.join(share_user)
-    send_mail(
-        'Ride Sharing System Share Ride Request Update',
-        f'The member {user.username} logged out of your share ride request.\nCurrent share users: {share_user_str}\n\n\nThis is an auto-generated email from Ride Sharing System. Please do not reply.',
-        '<EMAIL>',
-        [ride.owner.email],
-        fail_silently=False
-    )
+    service = gmail_authenticate()
+    send_message(service, "4nanaiiyo@gmail.com", ride.owner.email, "Ride Sharing System",
+                 f'<h1>Ride Sharing System Share Ride Request Update</h1><div>The member {user.username} logged out of your share ride request.</div><div>Current share users: {share_user_str}</div><br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
     return redirect(reverse('ride:view_my_ride'))
 
 
@@ -311,11 +296,19 @@ def cancel_driver_ride(request, ride_id):
     ride.driver_id = None
     try:
         ride.cancel()
+        service = gmail_authenticate()
+        send_message(service, "4nanaiiyo@gmail.com", ride.owner.email, "Ride Sharing System",
+                   f'<h1>Ride Sharing System Ride Cancellation</h1><div>We regret to inform you that your share ride from {ride.departure} to {ride.destination} has been <strong>canceled</strong>.<br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
+        # send email to share user
+        share_user_emails = [user.email for user in ride.share_user.all() if user.email]
+        for email in share_user_emails:
+            send_message(service, "4nanaiiyo@gmail.com", email, "Ride Sharing System",
+                         f'<h1>Ride Sharing System Ride Cancellation</h1><div>We regret to inform you that your share ride from {ride.departure} to {ride.destination} has been <strong>canceled</strong>.<br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
+
     except:
         messages.error(request, "Error:cancel fail")
         return redirect(reverse('ride:view_my_ride'))
     ride.save()
-
     return redirect(reverse('ride:view_my_ride'))
 
 # complete my driver ride
@@ -330,6 +323,9 @@ def complete_driver_ride(request, ride_id):
 
     try:
         ride.complete()
+        service = gmail_authenticate()
+        send_message(service, "4nanaiiyo@gmail.com", ride.owner.email, "Ride Sharing System",
+                     f'<h1>Ride Sharing System Ride Complete</h1><div>Your share ride from {ride.departure} to {ride.destination} has been completed.</div><div>Driver: {request.user.username}</div><div>Vehicle Type: {request.user.cars.first().vehicle_type}</div><br></br><br></br>This is an auto-generated email from Ride Sharing System. Please do not reply.')
     except:
         messages.error(request, "Error:complete fail")
         return redirect(reverse('ride:view_my_ride'))

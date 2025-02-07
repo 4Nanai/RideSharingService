@@ -20,24 +20,18 @@ def gmail_authenticate():
         creds = Credentials.from_authorized_user_file(tokenpath, SCOPES)
     # Authentication if no valid credentials are available
     if not creds or not creds.valid:
-        print("here1")
         if creds and creds.expired and creds.refresh_token:
-            print("here2")
             creds.refresh(Request())
         else:
-            print("here3")
             # This credentials.json is the credential you download from Google API portal when you
             # created the OAuth 2.0 Client IDs
             flow = InstalledAppFlow.from_client_secrets_file(
                 os.path.join(current_dir ,'credentials.json'), SCOPES)
             # this is the redirect URI which should match your API setting, you can
             # find this setting in Credentials/Authorized redirect URIs at the API setting portal
-            print("here4")
             creds = flow.run_local_server(port=49720, open_browser=False)
-            print("here5")
         # Save vouchers for later use
         with open(tokenpath, 'w') as token:
-            print("write")
             token.write(creds.to_json())
 
     return build('gmail', 'v1', credentials=creds)

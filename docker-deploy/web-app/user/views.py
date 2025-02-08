@@ -88,7 +88,7 @@ def register_view(request):
         else:
             context = {'form': form}
             print(form.errors)
-            logger.warning(f"fail to create user ({username})")
+            logger.warning(f"fail to create user: {form.errors.get_json_data()}")
             return render(request, 'user/register.html', context=context)
 
 @require_http_methods(['GET', 'POST'])
@@ -154,16 +154,24 @@ def register_driver_view(request):
                                     max_passenger=max_passenger,
                                     sp_info=sp_info)
             user.save()
-            logger.warning(f"user succeed to register new vihecle: {vehicle_type} ({vehicle_number})" )
+            logger.warning(f"user succeed to register new vehicle: {vehicle_type} ({vehicle_number})" )
             return render(request, 'user/driver_register.html', context={'form': form, 'success': True})
         else:
-            logger.warning(f"user failed to register new vihecle: {vehicle_type} ({vehicle_number})" )
+            logger.warning(f"user failed to register new vehicle: {form.errors.get_json_data()}" )
             return render(request, 'user/driver_register.html', context={'form': form})
 
 @require_http_methods(['GET', 'POST'])
 @login_required(login_url='/user/login/')
 def revise_car_view(request, pk):
-    car = request.user.cars.get(pk=pk)
+
+    car = CarModel.objects.get(pk=pk)
+    if car.user != request.user:
+        logger.warning(f"user {request.user} attempts to revise vehicle information of another user {car.user}.")
+        return redirect(reverse('index'))
+    for ride in request.user.confirmed_rides.all():
+        if ride.status == 'confirmed':
+            logger.warning(f"user {request.user} attempts to revise vehicle information while a ride is still in progress.")
+            return redirect(reverse('ride:view_my_ride'))
     if request.method == 'GET':
         form = CarForm(instance=car)
         return render(request, 'user/revise_car_info.html', context={'car': car, 'form':form})
@@ -186,8 +194,15 @@ class delete_car_view(DeleteView):
         return self.model.objects.filter(user=self.request.user)
 
     def form_valid(self, form):
-        response = super().form_valid(form)
         user = self.request.user
+        for ride in user.confirmed_rides.all():
+            if ride.status == 'confirmed':
+                logger.warning(f"user {user} attempts to delete vehicle information while a ride is still in progress.")
+                return redirect(reverse('ride:view_my_ride'))
+        response = super().form_valid(form)
+        if user.cars.count() == 0:
+            user.is_driver = False
+            user.save()
         if not CarModel.objects.filter(user=user).exists():
             user.is_driver = False
             user.save()

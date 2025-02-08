@@ -13,11 +13,9 @@ from user.models import CarModel
 from user.models import RSSUser
 from RSS.Email import send_message, gmail_authenticate
 # Create your views here.
-
+@login_required(login_url='/user/login/')
 @require_http_methods(['GET', 'POST'])
 def new_ride_view(request):
-    if not request.user.is_authenticated:
-        return redirect(reverse('user:login'))
     if request.method == 'GET':
         form = NewRideForm()
         return render(request, 'ride/new_ride.html', context={'form': form})
